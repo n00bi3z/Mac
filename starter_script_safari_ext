@@ -1,0 +1,30 @@
+#!/bin/bash
+extName="ublock.safariextz"
+extPath="/Users/$currentUser/Library/Safari/Extensions/"
+packageExtLocation="/tmp/"
+tccPath="/Library/Application Support/com.apple.TCC/TCC.db"
+
+sqlite3 "$tccPath" "INSERT or REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.Terminal',0,1,1,NULL,NULL)"          
+sqlite3 "$tccPath" "INSERT or REPLACE INTO access VALUES('kTCCServiceAccessibility','/usr/bin/osascript',1,1,1,NULL,NULL)"
+sqlite3 "$tccPath" "INSERT or REPLACE INTO access VALUES('kTCCServiceAccessibility','com.apple.loginwindow',0,1,1,NULL,NULL)"
+
+# Give it some time to process..
+sleep 1
+
+# Now we're going to mess with UI elements. First we open the Extension, which initiates copy to ~/Library/Safari/Extensions/
+# Then we're going to tell Safari to hit the Trust button, which creates the encryped keychain entry
+# Then we close the Preferences Window by using Command + W.
+
+osascript <<END
+tell application "Safari" to activate
+delay 1
+tell application "System Events"
+tell application process "Safari"
+set frontmost to true
+tell application "Safari" to open location "$packageExtLocation$extName"
+delay 1
+click button 1 of sheet 1 of window 1
+keystroke "w" using command down
+end tell
+end tell
+END
